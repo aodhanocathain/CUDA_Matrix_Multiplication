@@ -9,14 +9,14 @@ using std::cout;
 
 using std::endl;
 
-KernelTest::KernelTest(void (*kernel)(element* device_A, element* device_B, element* device_C), string kernelName, dim3 tileDims, enum reorder postKernelReordering) :
-	kernel(kernel), kernelName(kernelName), tileDims(tileDims), postKernelReordering(postKernelReordering) {}
+KernelTest::KernelTest(void (*kernel)(element* device_A, element* device_B, element* device_C), string kernelName, dim3 gridDims, dim3 tileDims, enum reorder postKernelReordering) :
+	kernel(kernel), kernelName(kernelName), gridDims(gridDims), tileDims(tileDims), postKernelReordering(postKernelReordering) {}
 
 void KernelTest::run(element* device_A, element* device_B, element* device_C, FMatrix& host_matrix_for_device_answer, FMatrix& host_answer)
 {
 	cout << "runnning " << this->kernelName << endl;
 
-	//reset output matrix
+	//reset output matrix and copy the reset to device
 	host_matrix_for_device_answer.reset();
 	if (cudaMemcpy(device_C, host_matrix_for_device_answer.elements.get(), sizeof(float) * N * N, cudaMemcpyHostToDevice))
 	{
@@ -25,8 +25,11 @@ void KernelTest::run(element* device_A, element* device_B, element* device_C, FM
 
 	//time and run the kernel
 	time_t start_time = clock();
-	kernel << <GRID_DIMS, this->tileDims >> > (device_A, device_B, device_C);
-	cudaDeviceSynchronize();
+	for (int test = 0; test < NUM_TESTS; test++)
+	{
+		kernel << <this->gridDims, this->tileDims >> > (device_A, device_B, device_C);
+		cudaDeviceSynchronize();
+	}
 	time_t end_time = clock();
 
 	cudaError_t cudaError = cudaGetLastError();

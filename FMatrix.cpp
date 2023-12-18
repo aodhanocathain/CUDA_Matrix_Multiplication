@@ -145,20 +145,20 @@ void FMatrix::reorderSingleRotate()
 
 	element* correctOrdering = new element[this->numRows * this->numCols];
 	//retrace the steps of each thread block to move results to where they should have gone
-	for (int blockIdxY = 0; blockIdxY < GRID_WIDTH_IN_TILES; blockIdxY++)
+	for (int blockIdxY = 0; blockIdxY < MATRIX_WIDTH_IN_ROTATION_VECTOR_LENGTHS; blockIdxY++)
 	{
-		for (int blockIdxX = 0; blockIdxX < GRID_WIDTH_IN_TILES; blockIdxX++)
+		for (int blockIdxX = 0; blockIdxX < MATRIX_WIDTH_IN_ROTATION_VECTOR_LENGTHS; blockIdxX++)
 		{
 			//retrace the steps of the thread block at the given indices
-			int tileTop = blockIdxY * TILE_WIDTH_IN_ELEMENTS;
-			int tileLeft = blockIdxX * TILE_WIDTH_IN_ELEMENTS;
-			for (int threadIdxX = 0; threadIdxX < TILE_WIDTH_IN_ELEMENTS; threadIdxX++)
+			int tileTop = blockIdxY * ROTATION_VECTOR_WIDTH;
+			int tileLeft = blockIdxX * ROTATION_VECTOR_WIDTH;
+			for (int threadIdxX = 0; threadIdxX < ROTATION_VECTOR_WIDTH; threadIdxX++)
 			{
 				int col = tileLeft + threadIdxX;
-				for (int row = 0; row < TILE_WIDTH_IN_ELEMENTS; row++)
+				for (int row = 0; row < ROTATION_VECTOR_WIDTH; row++)
 				{
 					int oldRow = tileTop + row;
-					int newRow = tileTop + ((row + col) % TILE_WIDTH_IN_ELEMENTS);
+					int newRow = tileTop + ((row + col) % ROTATION_VECTOR_WIDTH);
 					correctOrdering[(newRow * N) + col] = this->elements[(oldRow * N) + col];
 				}
 			}
@@ -174,27 +174,27 @@ void FMatrix::reorderDoubleRotate()
 
 	element* correctOrdering = new element[this->numRows * this->numCols];
 	//retrace the steps of each thread block to move results to where they should have gone
-	for (int blockIdxY = 0; blockIdxY < GRID_WIDTH_IN_TILES; blockIdxY++)
+	for (int blockIdxY = 0; blockIdxY < MATRIX_WIDTH_IN_ROTATION_VECTOR_LENGTHS; blockIdxY++)
 	{
-		for (int blockIdxX = 0; blockIdxX < GRID_WIDTH_IN_TILES; blockIdxX++)
+		for (int blockIdxX = 0; blockIdxX < MATRIX_WIDTH_IN_ROTATION_VECTOR_LENGTHS; blockIdxX++)
 		{
 			//retrace the steps of the thread block at the given indices
-			int tileTop = blockIdxY * TILE_WIDTH_IN_ELEMENTS;
-			int tileLeft = blockIdxX * TILE_WIDTH_IN_ELEMENTS;
-			for (int threadIdxX = 0; threadIdxX < TILE_WIDTH_IN_ELEMENTS; threadIdxX++)
+			int tileTop = blockIdxY * ROTATION_VECTOR_WIDTH;
+			int tileLeft = blockIdxX * ROTATION_VECTOR_WIDTH;
+			for (int threadIdxX = 0; threadIdxX < ROTATION_VECTOR_WIDTH; threadIdxX++)
 			{
 				int oldCol = tileLeft + threadIdxX;	//going down the thread's column of results
-				for (int ALeft = 0; ALeft < TILE_WIDTH_IN_ELEMENTS; ALeft += SQRT_TILE_WIDTH)
+				for (int ALeft = 0; ALeft < ROTATION_VECTOR_WIDTH; ALeft += SQRT_ROTATION_VECTOR_WIDTH)
 				{
-					for (int BRight = 0; BRight < SQRT_TILE_WIDTH; BRight++)
+					for (int BRight = 0; BRight < SQRT_ROTATION_VECTOR_WIDTH; BRight++)
 					{
 						int i = ALeft + BRight;
-						if (i >= TILE_WIDTH_IN_ELEMENTS) { break; }
+						if (i >= ROTATION_VECTOR_WIDTH) { break; }
 
 						int oldRow = tileTop + i;
 
-						int ALane = (TILE_WIDTH_IN_ELEMENTS + threadIdxX + ALeft) % TILE_WIDTH_IN_ELEMENTS;
-						int BLane = (TILE_WIDTH_IN_ELEMENTS + threadIdxX - BRight) % TILE_WIDTH_IN_ELEMENTS;
+						int ALane = (ROTATION_VECTOR_WIDTH + threadIdxX + ALeft) % ROTATION_VECTOR_WIDTH;
+						int BLane = (ROTATION_VECTOR_WIDTH + threadIdxX - BRight) % ROTATION_VECTOR_WIDTH;
 
 						int newRow = tileTop + ALane;
 						int newCol = tileLeft + BLane;

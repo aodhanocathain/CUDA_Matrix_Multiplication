@@ -10,13 +10,14 @@ using std::string;
 
 class KernelTest
 {
-public:
 
+public:
 	void (*kernel)(element* device_A, element* device_B, element* device_C);
 	string kernelName;
 	dim3 tileDims;	//the tile dimensions for launching the kernel
+	dim3 gridDims;	//the grid dimensions for launching the kernel
 	enum reorder postKernelReordering;	//indicates how to reorder the output matrix
 
-	KernelTest(void (*kernel)(element* device_A, element* device_B, element* device_C), string kernelName, dim3 tileDims, enum reorder postKernelReordering);
+	KernelTest(void (*kernel)(element* device_A, element* device_B, element* device_C), string kernelName, dim3 gridDims, dim3 tileDims, enum reorder postKernelReordering);
 	void run(element* device_A, element* device_B, element* device_C, FMatrix& host_matrix_for_device_answer, FMatrix& host_answer);
 };
